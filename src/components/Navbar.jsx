@@ -1,11 +1,10 @@
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Bars3Icon, BookmarkIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 import { signInWithPopup } from 'firebase/auth'
 import { signOut } from 'firebase/auth'
-import {auth, provider } from '../firebase-config'
+import { auth, provider } from '../firebase-config'
 import { Link } from 'react-router-dom'
-
 
 const navigation = [
   { name: 'Dashboard', href: '/', current: true }
@@ -14,7 +13,7 @@ const navigation = [
 const handleLogout = () => {
   signOut(auth).then(() => {
     localStorage.clear()
-    window.location.reload()
+    window.location.pathname = '/'
   }).catch((error) => {
     console.log(error)
   })
@@ -33,7 +32,6 @@ const handleSignup = () => {
     localStorage.setItem('email', user.email)
     localStorage.setItem('img_path', user.photoURL)
     window.location.reload()
-    console.log(user) 
   }
 )
 }
@@ -42,14 +40,13 @@ const user = {
   email: localStorage.getItem('email'),
   imageUrl: localStorage.getItem('img_path'),
 }
-console.log(user)
+
 const Navbar = () => {
   const [active, setActive] = useState(false)
-
   return (
     <>
       <div className="min-h-full">
-        <Disclosure as="nav" className="bg-gray-800 fixed w-full shadow-white shadow-sm">
+        <Disclosure as="nav" className="backdrop-blur fixed w-full z-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 items-center justify-between">
               <div className="flex">
@@ -88,20 +85,23 @@ const Navbar = () => {
               </div>
               <div className="hidden md:block">
                 <div className="ml-4 flex items-center md:ml-6">
-                  {localStorage.getItem('email') && <button 
-                          className={classNames('bg-gray-900 px-3 py-2 rounded-lg mx-5 text-white hover:text-white'
-                          )}
-                        >
+                  {localStorage.getItem('email') && 
+                  <>
+                  <Link 
+                    className={classNames('bg-gray-900 px-3 py-2 rounded-lg mx-5 text-white hover:text-white'
+                    )}
+                    to='/createpost'>
                           Create Post
-                  </button>}
-                  <button
-                    type="button"
+                  </Link>
+                  <Link
                     className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                    to='/myfavourite'
                   >
-                    <span className="absolute -inset-1.5" />
+                    {/* <span className="absolute -inset-1.5" /> */}
                     <span className="sr-only">View notifications</span>
-                    <BellIcon aria-hidden="true" className="h-6 w-6" />
-                  </button>
+                    <BookmarkIcon aria-hidden="true" className="h-6 w-6" />
+                  </Link>
+                  </>}
 
                   {/* Profile dropdown */}
                   <Menu as="div" className="relative ml-3">
@@ -176,7 +176,8 @@ const Navbar = () => {
               </Link>}
             </div>
             <div className="border-t border-gray-700 pb-3 pt-4">
-              {localStorage.getItem("id") ?  <div>
+              {localStorage.getItem("id") ?  
+                <div>
                 <div className="flex items-center px-5">
                   <div className="flex-shrink-0">
                     <img alt="image" src={user.imageUrl} className="h-10 w-10 rounded-full" />
@@ -185,14 +186,14 @@ const Navbar = () => {
                     <div className="text-base font-medium leading-none text-white">{user.name}</div>
                     <div className="text-sm font-medium leading-none text-gray-400">{user.email}</div>
                   </div>
-                  <button
-                    type="button"
+                  <Link
                     className="relative ml-auto flex-shrink-0 rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                    to='/myfavourite'
                   >
                     <span className="absolute -inset-1.5" />
                     <span className="sr-only">View notifications</span>
-                    <BellIcon aria-hidden="true" className="h-6 w-6" />
-                  </button>
+                    <BookmarkIcon aria-hidden="true" className="h-6 w-6" />
+                  </Link>
                 </div>
                 <div className="mt-3 space-y-1 px-2">
                     {/* <Link
@@ -201,6 +202,11 @@ const Navbar = () => {
                     >
                       profile
                     </Link> */}
+                    {localStorage.getItem('email') && <Link 
+                          className={"block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"}
+                        to='/createpost'>
+                          Create Post
+                    </Link>}
                     <button
                       onClick={handleLogout}
                       className="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
