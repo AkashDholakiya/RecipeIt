@@ -11,6 +11,7 @@ import { useState } from 'react'
 const CreatePost = () => {
     const [loading, setLoading] = useState(false)
     const [data, setData] = useState({
+        title : '',
         imageData: null,
         ingredients: [],
         category: 'Breakfast recipes',
@@ -91,6 +92,12 @@ const CreatePost = () => {
     const HandleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true)
+
+        if (data.title === '') {
+            alert('Please fill Title');
+            setLoading(false)
+            return;
+        }
         if (data.imageData === null) {
             alert('Please upload Image');
             setLoading(false)
@@ -130,7 +137,6 @@ const CreatePost = () => {
 
                 // Await the upload process
                 await uploadBytes(storageRef, data.imageData);
-                console.log('Image Uploaded');
 
                 // Get Image URL
                 const imgRef = ref(storage, imgWhole);
@@ -146,26 +152,38 @@ const CreatePost = () => {
             uname: localStorage.getItem('uname'),
             userImage: localStorage.getItem('img_path'),
             image: imgUrl,
+            title: data.title,
             ingredients: data.ingredients,
             category: data.category,
             instructions: data.instructions
         }
 
-        const docRef = await addDoc(collection(db, 'recipes'), {
+        await addDoc(collection(db, 'recipes'), {
             sendData
         });
-
-        console.log('Document written with ID: ', docRef.id);
         alert('Recipe Submitted');
         setLoading(false)
     }
-    console.log(data);
     return (
         <div className='flex pt-16 justify-center items-center'>
             <div className="w-full max-w-3xl px-4">
                 <h1 className="text-3xl font-bold text-white my-5">Write Your Recipe</h1>
                 <form onSubmit={HandleSubmit}>
                     <Fieldset className="space-y-6 rounded-xl bg-white/5 p-6 sm:p-10" >
+                        <Field>
+                            <Label className="text-sm/6 font-medium text-white">Title</Label>
+                            <Input
+                                type="text"
+                                value={data.title}
+                                onChange={handleChange}
+                                className={clsx(
+                                    'mt-3 block w-full rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm/6 text-white',
+                                    'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
+                                )}
+                                name={`title`}
+                                id={`title`}
+                            />
+                        </Field>
                         <Field className='flex justify-center flex-col'>
                             {/* view uploaded Image */}
                             {data.imageData && <img src={URL.createObjectURL(data.imageData)} className="h-96 object-fill rounded-lg mb-3" />}

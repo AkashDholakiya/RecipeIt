@@ -1,5 +1,8 @@
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { Bars3Icon, BookmarkIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Bars3Icon, BookmarkIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import {  Field, Input, Select } from '@headlessui/react'
+import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import {clsx} from 'clsx'
 import { useState } from 'react'
 import { signInWithPopup } from 'firebase/auth'
 import { signOut } from 'firebase/auth'
@@ -7,7 +10,7 @@ import { auth, provider } from '../firebase-config'
 import { Link } from 'react-router-dom'
 
 const navigation = [
-  { name: 'Dashboard', href: '/', current: true }
+  { name: 'Dashboard', href: '/'}
 ]
 
 const handleLogout = () => {
@@ -41,8 +44,48 @@ const user = {
   imageUrl: localStorage.getItem('img_path'),
 }
 
-const Navbar = () => {
-  const [active, setActive] = useState(false)
+/* eslint-disable */
+const Navbar = ({data, setData, initial}) => {
+  const [search, setSearch] = useState('')
+  const [filter , setFilter] = useState('filter')
+
+  const handleChange = (e) => {
+    setSearch(e.target.value)
+
+    if(e.target.value === '') {
+      setData(initial)
+    }
+  }
+
+  const handleFilter = (e) => {
+    setFilter(e.target.value)
+
+    if(e.target.value === 'filter') {
+      setData(initial)
+      return;
+    }
+
+    const filterRecipe = initial.filter((recipe) => {
+      return recipe.data.sendData.category === e.target.value
+    })
+    setData(filterRecipe)
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+
+    if(search === '') {
+      return
+    }
+
+    const searchRecipe = data.filter((recipe) => {
+      // for each ingredient in the recipe, check if the search value is included
+      return recipe.data.sendData.ingredients.some((ingredient) => ingredient.toLowerCase().includes(search.toLowerCase()))
+    })
+    setData(searchRecipe)
+
+  }
+
   return (
     <>
       <div className="min-h-full">
@@ -60,26 +103,50 @@ const Navbar = () => {
                         key={item.name}
                         to={item.href}
                         aria-current={item.current ? 'page' : undefined}
-                        onClick={() => {setActive(false); item.current = true;}}
                         className={classNames(
-                          item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                          'bg-gray-900 text-white',
                           'rounded-md px-3 py-2 text-sm font-medium',
                         )}
                       >
                         {item.name}
                       </Link>
                     ))}
-                    {localStorage.getItem('role') === 'doctor' && <Link
-                        to="/mypost"
-                        onClick={() => {setActive(true); navigation[0].current = false;}}
-                        aria-current={active ? 'page' : undefined}
-                        className={classNames(
-                          active ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
-                          'rounded-md px-3 py-2 text-sm font-medium',
-                        )}
-                      >
-                        Post
-                      </Link>}
+                    {localStorage.getItem('email') && <Field>
+                        <div className="relative">
+                            <Select
+                                name='filter'
+                                id='filter'
+                                value={filter}
+                                onChange={handleFilter}
+                                className={clsx(
+                                    'block appearance-none rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm/6 text-white',
+                                    'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25',
+                                    // Make the text of each option black on Windows
+                                    '*:text-black'
+                                )}
+                            >
+                                <option value="filter">Filter</option>
+                                <option value="Breakfast recipes">Breakfast recipes</option>
+                                <option value="Lunch recipes">Lunch recipes</option>
+                                <option value="Dinner recipes">Dinner recipes</option>
+                                <option value="Snacks recipes">Snacks recipes</option>
+                                <option value="Desserts recipes">Desserts recipes</option>
+                                <option value="Drinks recipes">Drinks recipes</option>
+                                <option value="Appetizer recipes">Appetizer recipes</option>
+                                <option value="Salad recipes">Salad recipes</option>
+                                <option value="Soup recipes">Soup recipes</option >
+                                <option value="Main-course recipes">Main-course recipes</option>
+                                <option value="Side-dish recipes">Side-dish recipes</option>
+                                <option value="Vegetarian Dishes">Vegetarian Dishes</option>
+                                <option value="Non-vegetarian Dishes">Non-vegetarian Dishes</option>
+                                <option value="Vegan Dishes">Vegan Dishes</option>
+                            </Select>
+                            <ChevronDownIcon
+                                className="group pointer-events-none absolute top-2.5 right-2.5 size-4 fill-white/60"
+                                aria-hidden="true"
+                            />
+                        </div>
+                    </Field>}
                   </div>
                 </div>
               </div>
@@ -87,6 +154,26 @@ const Navbar = () => {
                 <div className="ml-4 flex items-center md:ml-6">
                   {localStorage.getItem('email') && 
                   <>
+                  <div className="relative w-64">
+                    <Input type="text"
+                          value={search}
+                          onChange={handleChange}
+                          className={clsx(
+                              'w-full rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm/6 text-white flex-grow',
+                              'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
+                          )}
+                          placeholder='Search Recipe by ingredient'
+                          name={`search`}
+                          id={`search`} 
+                    />
+                    <div className="absolute inset-y-0 right-0 w-8 flex items-center">
+                      <MagnifyingGlassIcon
+                        className="group cursor-pointer h-5 w-5 fill-white/60 hover:fill-white/80"
+                        title='search'
+                        onClick={handleSubmit}
+                      />
+                    </div>
+                  </div>
                   <Link 
                     className={classNames('bg-gray-900 px-3 py-2 rounded-lg mx-5 text-white hover:text-white'
                     )}
@@ -153,7 +240,6 @@ const Navbar = () => {
                 <Link 
                   key={item.name}
                   to={item.href}
-                  onClick={() => {setActive(false); item.current = true;}}
                   aria-current={item.current ? 'page' : undefined}
                   className={classNames(
                     item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
@@ -163,17 +249,6 @@ const Navbar = () => {
                   {item.name}
                 </Link>
               ))}
-              {localStorage.getItem('role') === 'doctor' && <Link
-                to="/createblog"
-                onClick={() => {setActive(true); navigation[0].current = false;}}
-                aria-current={active ? 'page' : undefined}
-                className={classNames(
-                  active ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
-                  'rounded-md px-3 py-2 text-sm font-medium',
-                )}
-              >
-                Post
-              </Link>}
             </div>
             <div className="border-t border-gray-700 pb-3 pt-4">
               {localStorage.getItem("id") ?  

@@ -2,8 +2,8 @@ import { useEffect, useState } from "react"
 import { getDoc,doc ,getDocs, collection, addDoc, updateDoc } from 'firebase/firestore'
 import { db } from "../firebase-config"
 
-const Home = () => {
-  const [data, setData] = useState([])
+/* eslint-disable */
+const Home = ({data, setData, setInitial}) => {
   const [load, setLoad] = useState(false)
 
   const getPosts = async () => {
@@ -15,11 +15,13 @@ const Home = () => {
         posts.push({ id: doc.id, data: doc.data() });
       });
       setData(posts);
+      setInitial(posts);
     } catch (error) {
       console.error('Error getting documents: ', error);
     }
 
     setLoad(false)
+
   };
 
   const SaveCurrent = async (item) => {
@@ -72,7 +74,6 @@ const Home = () => {
     // eslint-disable-next-line
   }, [])
 
-  console.log(data)
   return (
     <div className="text-white pt-16 flex w-full flex-col justify-center items-center">
       {!localStorage.getItem('uname') ?
@@ -92,6 +93,7 @@ const Home = () => {
         {data.map((item) => {
           return (
             <div key={item.id} className={`border-2 w-full p-4 mb-2 rounded-lg`}>
+              <h1 className="mb-5 text-2xl font-semibold">{item.data.sendData.title}</h1>
               <img src={item.data.sendData.image} className="rounded-lg w-full h-64 object-fill" alt="image" />
               <div className="mt-2 w-full">
                 <h1 className="text-transparent bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500 bg-clip-text text-2xl font-bold">Ingredients </h1>
